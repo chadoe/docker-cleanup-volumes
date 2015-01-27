@@ -37,6 +37,11 @@ function delete_volumes() {
   done
 }
 
+if [ $UID != 0 ]; then
+    echo "You need to be root to use this script."
+    exit 1
+fi
+
 docker_bin=$(which docker.io || which docker)
 if [ -z "$docker_bin" ] ; then
     echo "Please install docker. You can install docker by running \"wget -qO- https://get.docker.io/ | sh\"."
