@@ -16,10 +16,9 @@ function delete_volumes() {
         return
   fi
   echo "Delete unused volume directories from $targetdir"
-  for dir in /${targetdir}/*/
+  for dir in $(ls -d ${targetdir}/* 2>/dev/null)
   do
-        dir=${dir%*/}
-        dir=${dir##*/}
+        dir=$(basename $dir)
         if [[ "${dir}" =~ [0-9a-f]{64} ]]; then
                 if [[ ${allvolumes[@]} =~ "${dir}" ]]; then
                         echo In use ${dir}
