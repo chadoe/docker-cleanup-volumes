@@ -73,7 +73,7 @@ for container in `${docker_bin} ps -a -q --no-trunc`; do
                         allvolumes+=("${vid##*/}")
                 else
                         #check if it's a bindmount, these have a config.json file in the ${volumesdir} but no files in ${vfsdir}
-                        for bmv in `grep --include config.json -Rl "\"IsBindMount\":true" ${volumesdir} | xargs -i grep -l "\"Path\":\"${vid}\"" {}`; do
+                        for bmv in `grep --include config.json -Rl "\"IsBindMount\":true" ${volumesdir} | xargs grep -l "\"Path\":\"${vid}\""`; do
                                 bmv="$(basename "$(dirname "${bmv}")")"
                                 allvolumes+=("${bmv}")
                                 #there should be only one config for the bindmount, delete any duplicate for the same bindmount.
