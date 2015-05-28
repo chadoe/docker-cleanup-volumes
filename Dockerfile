@@ -10,14 +10,15 @@ MAINTAINER Martin van Beurden <chadoe@gmail.com>
 ENV DOCKER_VERSION=1.5.0
 
 #Install an up to date version of docker
-RUN apk add --update-cache curl bash grep && rm -rf /var/cache/apk/*
+RUN apk add --update-cache curl bash grep && \
 # the docker package in alpine disables aufs and devicemapper
-RUN curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-$DOCKER_VERSION -o /usr/bin/docker && \
-  chmod +x /usr/bin/docker
+    curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-$DOCKER_VERSION -o /usr/bin/docker && \
+    chmod +x /usr/bin/docker && \
+#cleanup
+    apk del curl && rm -rf /var/cache/apk/*
 
 #Add the cleanup script
 ADD ./docker-cleanup-volumes.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-cleanup-volumes.sh
 
 #Define entrypoint
 ENTRYPOINT ["/usr/local/bin/docker-cleanup-volumes.sh"]
