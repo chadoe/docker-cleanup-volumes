@@ -3,7 +3,7 @@
 #Usage:
 #docker run -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker --rm martin/docker-cleanup-volumes [--dry-run]
 #
-FROM alpine:3.1
+FROM alpine:3.2
 
 MAINTAINER Martin van Beurden <chadoe@gmail.com>
 
