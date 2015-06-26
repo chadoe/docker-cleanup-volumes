@@ -43,7 +43,7 @@ if [ $UID != 0 ]; then
     exit 1
 fi
 
-docker_bin=$(which docker.io || which docker)
+docker_bin=$(which docker.io 2> /dev/null || which docker 2> /dev/null)
 if [ -z "$docker_bin" ] ; then
     echo "Please install docker. You can install docker by running \"wget -qO- https://get.docker.io/ | sh\"."
     exit 1
