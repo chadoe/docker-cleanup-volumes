@@ -68,12 +68,14 @@ for container in `${docker_bin} ps -a -q --no-trunc`; do
         #ever exists in the volumesdir but just to be safe
         allvolumes+=${container}
         #add all volumes from this container to the list of volumes
-        for vid in `${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}`; do
-                if [[ ${vid} == ${vfsdir}* && "${vid##*/}" =~ [0-9a-f]{64} ]]; then
-                        allvolumes+=("${vid##*/}")
+        for volpath in `${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}`; do
+		#try to get volume id from the volume path
+		vid=$(echo "${volpath}"|sed "s|${vfsdir}||;s|${volumesdir}||;s/.*\([0-9a-f]\{64\}\).*/\1/")
+                if [[ (${volpath} == ${vfsdir}* || ${volpath} == ${volumesdir}*) && "${vid}" =~ [0-9a-f]{64} ]]; then
+                        allvolumes+=("${vid}")
                 else
-                        #check if it's a bindmount, these have a config.json file in the ${volumesdir} but no files in ${vfsdir}
-                        for bmv in `grep --include config.json -Rl "\"IsBindMount\":true" ${volumesdir} | xargs grep -l "\"Path\":\"${vid}\""`; do
+                        #check if it's a bindmount, these have a config.json file in the ${volumesdir} but no files in ${vfsdir} (docker 1.6.2 and below)
+                        for bmv in `grep --include config.json -Rl "\"IsBindMount\":true" ${volumesdir} | xargs grep -l "\"Path\":\"${volpath}\""`; do
                                 bmv="$(basename "$(dirname "${bmv}")")"
                                 allvolumes+=("${bmv}")
                                 #there should be only one config for the bindmount, delete any duplicate for the same bindmount.
@@ -85,3 +87,4 @@ done
 
 delete_volumes ${volumesdir}
 delete_volumes ${vfsdir}
+
