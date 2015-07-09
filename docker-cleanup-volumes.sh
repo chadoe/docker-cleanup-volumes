@@ -4,7 +4,7 @@ set -eo pipefail
 
 #usage: sudo ./docker-cleanup-volumes.sh [--dry-run]
 
-dockerdir=/var/lib/docker
+dockerdir=`docker info | grep "Data loop file" | sed "s/\/devicemapper.*//" | sed "s/.* //"`
 volumesdir=${dockerdir}/volumes
 vfsdir=${dockerdir}/vfs/dir
 allvolumes=()
