@@ -60,7 +60,7 @@ fi
 fi
 
 # Make sure that we can talk to docker daemon. If we cannot, we fail here.
-docker info >/dev/null
+${docker_bin} info >/dev/null
 
 container_ids=$(${docker_bin} ps -a -q --no-trunc)
 
