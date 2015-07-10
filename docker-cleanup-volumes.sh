@@ -4,7 +4,7 @@ set -eo pipefail
 
 #usage: sudo ./docker-cleanup-volumes.sh [--dry-run]
 
-dockerdir=/var/lib/docker
+dockerdir=$(readlink -f /var/lib/docker)
 volumesdir=${dockerdir}/volumes
 vfsdir=${dockerdir}/vfs/dir
 allvolumes=()
@@ -43,7 +43,7 @@ if [ $UID != 0 ]; then
     exit 1
 fi
 
-docker_bin=$(which docker.io || which docker)
+docker_bin=$(which docker.io 2> /dev/null || which docker 2> /dev/null)
 if [ -z "$docker_bin" ] ; then
     echo "Please install docker. You can install docker by running \"wget -qO- https://get.docker.io/ | sh\"."
     exit 1
@@ -60,18 +60,30 @@ fi
 fi
 
 # Make sure that we can talk to docker daemon. If we cannot, we fail here.
-docker info >/dev/null
+${docker_bin} info >/dev/null
+
+container_ids=$(${docker_bin} ps -a -q --no-trunc)
+
+if [[ ${container_ids[@]} =~ (^|[[:space:]])"$HOSTNAME" ]]; then
+    dockerdir_match=`${docker_bin} inspect -f '{{ index .Volumes "/var/lib/docker" }}' $HOSTNAME`
+else
+    dockerdir_match=${dockerdir}
+fi
+
+volumesdir_match=${dockerdir_match}/volumes
+vfsdir_match=${dockerdir_match}/vfs/dir
 
 #All volumes from all containers
-for container in `${docker_bin} ps -a -q --no-trunc`; do
+for container in $container_ids; do
         #add container id to list of volumes, don't think these
         #ever exists in the volumesdir but just to be safe
         allvolumes+=${container}
         #add all volumes from this container to the list of volumes
         for volpath in `${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}`; do
 		#try to get volume id from the volume path
-		vid=$(echo "${volpath}"|sed "s|${vfsdir}||;s|${volumesdir}||;s/.*\([0-9a-f]\{64\}\).*/\1/")
-                if [[ (${volpath} == ${vfsdir}* || ${volpath} == ${volumesdir}*) && "${vid}" =~ [0-9a-f]{64} ]]; then
+		vid=$(echo "${volpath}"|sed "s|${vfsdir_match}||;s|${volumesdir_match}||;s/.*\([0-9a-f]\{64\}\).*/\1/")
+                # host daemon shows original dir path - this is why host_ variables are used:
+                if [[ (${volpath} == ${vfsdir_match}* || ${volpath} == ${volumesdir_match}*) && "${vid}" =~ [0-9a-f]{64} ]]; then
                         allvolumes+=("${vid}")
                 else
                         #check if it's a bindmount, these have a config.json file in the ${volumesdir} but no files in ${vfsdir} (docker 1.6.2 and below)
