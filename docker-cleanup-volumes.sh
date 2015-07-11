@@ -4,7 +4,28 @@ set -eo pipefail
 
 #usage: sudo ./docker-cleanup-volumes.sh [--dry-run]
 
-dockerdir=$(readlink -f /var/lib/docker)
+if [ $UID != 0 ]; then
+    echo "You need to be root to use this script."
+    exit 1
+fi
+
+docker_bin=$(which docker.io 2> /dev/null || which docker 2> /dev/null)
+if [ -z "$docker_bin" ] ; then
+    echo "Please install docker. You can install docker by running \"wget -qO- https://get.docker.io/ | sh\"."
+    exit 1
+fi
+
+# Default dir 
+dockerdir=/var/lib/docker
+
+# Look for an alternate docker directory with -g option
+dockerPs=`ps aux | grep $docker_bin | grep -v grep`
+if [[ $dockerPs =~ ' -g ' ]]; then
+	dockerdir=`echo $dockerPs | sed 's/.* -g//' | cut -d ' ' -f 2`
+fi
+
+dockerdir=$(readlink -f $dockerdir)
+
 volumesdir=${dockerdir}/volumes
 vfsdir=${dockerdir}/vfs/dir
 allvolumes=()
@@ -38,17 +59,6 @@ function delete_volumes() {
   done
 }
 
-if [ $UID != 0 ]; then
-    echo "You need to be root to use this script."
-    exit 1
-fi
-
-docker_bin=$(which docker.io 2> /dev/null || which docker 2> /dev/null)
-if [ -z "$docker_bin" ] ; then
-    echo "Please install docker. You can install docker by running \"wget -qO- https://get.docker.io/ | sh\"."
-    exit 1
-fi
-
 if [ "$1" = "--dry-run" ]; then
         dryrun=true
 else if [ -n "$1" ]; then
@@ -65,7 +75,7 @@ ${docker_bin} info >/dev/null
 container_ids=$(${docker_bin} ps -a -q --no-trunc)
 
 if [[ ${container_ids[@]} =~ (^|[[:space:]])"$HOSTNAME" ]]; then
-    dockerdir_match=`${docker_bin} inspect -f '{{ index .Volumes "/var/lib/docker" }}' $HOSTNAME`
+    dockerdir_match=`${docker_bin} inspect -f '{{ index .Volumes "${dockerdir}" }}' $HOSTNAME`
 else
     dockerdir_match=${dockerdir}
 fi
