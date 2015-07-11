@@ -4,7 +4,19 @@ set -eo pipefail
 
 #usage: sudo ./docker-cleanup-volumes.sh [--dry-run]
 
-dockerdir=$(readlink -f /var/lib/docker)
+docker_bin=$(which docker.io 2> /dev/null || which docker 2> /dev/null)
+
+# Default dir 
+dockerdir=/var/lib/docker
+
+# Look for an alternate docker directory with -g option
+dockerPs=`ps aux | grep $docker_bin | grep -v grep`
+if [[ $dockerPs =~ ' -g ' ]]; then
+	dockerdir=`echo $dockerPs | sed 's/.* -g//' | cut -d ' ' -f 2`
+fi
+
+dockerdir=$(readlink -f $dockerdir)
+
 volumesdir=${dockerdir}/volumes
 vfsdir=${dockerdir}/vfs/dir
 allvolumes=()
@@ -43,7 +55,6 @@ if [ $UID != 0 ]; then
     exit 1
 fi
 
-docker_bin=$(which docker.io 2> /dev/null || which docker 2> /dev/null)
 if [ -z "$docker_bin" ] ; then
     echo "Please install docker. You can install docker by running \"wget -qO- https://get.docker.io/ | sh\"."
     exit 1
