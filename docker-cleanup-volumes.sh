@@ -75,7 +75,7 @@ ${docker_bin} info >/dev/null
 container_ids=$(${docker_bin} ps -a -q --no-trunc)
 
 if [[ ${container_ids[@]} =~ (^|[[:space:]])"$HOSTNAME" ]]; then
-    dockerdir_match=`${docker_bin} inspect -f '{{ index .Volumes "/var/lib/docker" }}' $HOSTNAME`
+    dockerdir_match=`${docker_bin} inspect -f '{{ index .Volumes "${dockerdir}" }}' $HOSTNAME`
 else
     dockerdir_match=${dockerdir}
 fi
