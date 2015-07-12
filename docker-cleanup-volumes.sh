@@ -6,11 +6,11 @@ set -eo pipefail
 
 docker_bin=$(which docker.io 2> /dev/null || which docker 2> /dev/null)
 
-# Default dir 
+# Default dir
 dockerdir=/var/lib/docker
 
 # Look for an alternate docker directory with -g option
-dockerPs=`ps aux | grep $docker_bin | grep -v grep`
+dockerPs=`ps aux | grep $docker_bin | grep -v grep` || :
 if [[ $dockerPs =~ ' -g ' ]]; then
 	dockerdir=`echo $dockerPs | sed 's/.* -g//' | cut -d ' ' -f 2`
 fi
