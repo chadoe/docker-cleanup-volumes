@@ -15,8 +15,6 @@ if [[ $dockerPs =~ ' -g ' ]]; then
 	dockerdir=`echo $dockerPs | sed 's/.* -g//' | cut -d ' ' -f 2`
 fi
 
-dockerdir=$(readlink -f $dockerdir)
-
 volumesdir=${dockerdir}/volumes
 vfsdir=${dockerdir}/vfs/dir
 allvolumes=()
