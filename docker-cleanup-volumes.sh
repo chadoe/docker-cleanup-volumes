@@ -1,6 +1,6 @@
 #! /bin/bash
 
-set -eo pipefail
+set -eou pipefail
 
 #usage: sudo ./docker-cleanup-volumes.sh [--dry-run]
 
