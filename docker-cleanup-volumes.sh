@@ -58,9 +58,9 @@ if [ -z "$docker_bin" ] ; then
     exit 1
 fi
 
-if [ "$1" = "--dry-run" ]; then
+if [ $# -gt 0 ] && [ "$1" = "--dry-run" ]; then
         dryrun=true
-else if [ -n "$1" ]; then
+else if [ $# -gt 0 ] && [ -n "$1" ]; then
         echo "Cleanup docker volumes: remove unused volumes."
         echo "Usage: ${0##*/} [--dry-run]"
         echo "   --dry-run: dry run: display what would get removed."
