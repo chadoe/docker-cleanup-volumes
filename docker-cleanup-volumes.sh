@@ -32,7 +32,7 @@ function delete_volumes() {
   do
         dir=$(basename $dir)
         if [[ "${dir}" =~ [0-9a-f]{64} ]]; then
-                if [[ ${allvolumes[@]} =~ "${dir}" ]]; then
+                if [ ${#allvolumes[@]} -gt 0 ] && [[ ${allvolumes[@]} =~ "${dir}" ]]; then
                         echo In use ${dir}
                 else
                         if [ "${dryrun}" = false ]; then
