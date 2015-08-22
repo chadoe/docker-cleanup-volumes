@@ -97,7 +97,10 @@ container_ids=$(${docker_bin} ps -a -q --no-trunc)
 # Check if we're running as a docker container
 if [[ ${container_ids[@]} =~ (^|[[:space:]])"$HOSTNAME" ]]; then
     # Get the dockerdir on the host from the volume mapped to /var/lib/docker
-    dockerdir_match=`${docker_bin} inspect -f '{{ index .Volumes "/var/lib/docker" }}' $HOSTNAME`
+    dockerdir_match=$(
+        ${docker_bin} inspect -f '{{if .Volumes}}{{ index .Volumes "/var/lib/docker" }}{{end}}' "$HOSTNAME"; \
+        ${docker_bin} inspect --format='{{range $mount := .Mounts}}{{if eq $mount.Destination "/var/lib/docker"}}{{$mount.Source}}{{end}}{{end}}' "$HOSTNAME"
+    )
 else
     # Script is running standalone, dockerdir is the directory to use
     dockerdir_match=${dockerdir}
@@ -116,8 +119,11 @@ for container in $container_ids; do
         #ever exists in the volumesdir but just to be safe
         allvolumes+=${container}
         #add all volumes from this container to the list of volumes
-        for volpath in `${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}`; do
-		log_verbose "Processing volumepath ${volpath} for container ${container}"
+        for volpath in $(
+		${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}; \
+		${docker_bin} inspect --format='{{range $mount := .Mounts}}{{$mount.Source}}{{"\n"}}{{end}}' ${container} \
+	); do
+                log_verbose "Processing volumepath ${volpath} for container ${container}"
 		#try to get volume id from the volume path
 		vid=$(echo "${volpath}"|sed "s|${vfsdir_match}||;s|${volumesdir_match}||;s/.*\([0-9a-f]\{64\}\).*/\1/")
                 # host daemon shows original dir path - this is why _match variables are used:
