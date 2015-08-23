@@ -19,6 +19,13 @@ volumesdir=${dockerdir}/volumes
 vfsdir=${dockerdir}/vfs/dir
 allvolumes=()
 dryrun=false
+verbose=false
+
+function log_verbose() {
+    if [ "${verbose}" = true ]; then
+        echo "$1"
+    fi;
+}
 
 function delete_volumes() {
   targetdir=$1
@@ -58,15 +65,27 @@ if [ -z "$docker_bin" ] ; then
     exit 1
 fi
 
-if [ $# -gt 0 ] && [ "$1" = "--dry-run" ]; then
-        dryrun=true
-else if [ $# -gt 0 ] && [ -n "$1" ]; then
-        echo "Cleanup docker volumes: remove unused volumes."
-        echo "Usage: ${0##*/} [--dry-run]"
-        echo "   --dry-run: dry run: display what would get removed."
-        exit 1
-fi
-fi
+while [[ $# > 0 ]]
+do
+    key="$1"
+
+    case $key in
+        -n|--dry-run)
+            dryrun=true
+        ;;
+        -v|--verbose)
+            verbose=true
+        ;;
+        *)
+            echo "Cleanup docker volumes: remove unused volumes."
+            echo "Usage: ${0##*/} [--dry-run] [--verbose]"
+            echo "   -n, --dry-run: dry run: display what would get removed."
+            echo "   -v, --verbose: verbose output."
+            exit 1
+        ;;
+    esac
+    shift
+done
 
 # Make sure that we can talk to docker daemon. If we cannot, we fail here.
 ${docker_bin} info >/dev/null
@@ -86,6 +105,9 @@ fi
 volumesdir_match=${dockerdir_match}/volumes
 vfsdir_match=${dockerdir_match}/vfs/dir
 
+log_verbose "dockerdir -> ${dockerdir}"
+log_verbose "dockerdir_match -> ${dockerdir_match}"
+
 #All volumes from all containers
 for container in $container_ids; do
         #add container id to list of volumes, don't think these
@@ -93,15 +115,18 @@ for container in $container_ids; do
         allvolumes+=${container}
         #add all volumes from this container to the list of volumes
         for volpath in `${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}`; do
+		log_verbose "Processing volumepath ${volpath} for container ${container}"
 		#try to get volume id from the volume path
 		vid=$(echo "${volpath}"|sed "s|${vfsdir_match}||;s|${volumesdir_match}||;s/.*\([0-9a-f]\{64\}\).*/\1/")
                 # host daemon shows original dir path - this is why _match variables are used:
                 if [[ (${volpath} == ${vfsdir_match}* || ${volpath} == ${volumesdir_match}*) && "${vid}" =~ [0-9a-f]{64} ]]; then
+                        log_verbose "Found volume ${vid}"
                         allvolumes+=("${vid}")
                 else
                         #check if it's a bindmount, these have a config.json file in the ${volumesdir} but no files in ${vfsdir} (docker 1.6.2 and below)
                         for bmv in `grep --include config.json -Rl "\"IsBindMount\":true" ${volumesdir} | xargs grep -l "\"Path\":\"${volpath}\""`; do
                                 bmv="$(basename "$(dirname "${bmv}")")"
+                                log_verbose "Found bindmount ${bmv}"
                                 allvolumes+=("${bmv}")
                                 #there should be only one config for the bindmount, delete any duplicate for the same bindmount.
                                 break
@@ -112,3 +137,4 @@ done
 
 delete_volumes ${volumesdir}
 delete_volumes ${vfsdir}
+
