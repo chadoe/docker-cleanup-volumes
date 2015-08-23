@@ -28,7 +28,7 @@ function delete_volumes() {
         return
   fi
   echo "Delete unused volume directories from $targetdir"
-  for dir in $(ls -d ${targetdir}/* 2>/dev/null)
+  for dir in $(find ${targetdir} -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
   do
         dir=$(basename $dir)
         if [[ "${dir}" =~ [0-9a-f]{64} ]]; then
@@ -112,4 +112,3 @@ done
 
 delete_volumes ${volumesdir}
 delete_volumes ${vfsdir}
-
