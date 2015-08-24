@@ -7,7 +7,7 @@ FROM alpine:3.2
 
 MAINTAINER Martin van Beurden <chadoe@gmail.com>
 
-ENV DOCKER_VERSION=1.5.0
+ENV DOCKER_VERSION=1.4.1
 
 #Install an up to date version of docker
 RUN apk add --update-cache curl bash grep && \
