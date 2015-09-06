@@ -10,8 +10,9 @@ Shellscript to delete orphaned docker volumes in /var/lib/docker/volumes and /va
 Docker version 1.4.1 up to 1.8.1
 
 ### Precautions
-1. [Backup your volumes](https://docs.docker.com/userguide/dockervolumes/#backup-restore-or-migrate-data-volumes "Docker Docs") because.. you know.. the script may not like your system.
-2. When using the script for the first time or after upgrading the host Docker version, run the script with the `--dry-run` parameter first to make sure it works okay and doesn't delete any volumes that shouldn't be deleted. If you feel bold and run it without `--dry-run` anyway, make sure you did 1.
+1. Don't use with boot2docker, docker machine or any tools that use a virtual machine to run docker, unless you run the script on the virtual machine itself (meaning don't run this script or docker command from your MAC).
+2. [Backup your volumes](https://docs.docker.com/userguide/dockervolumes/#backup-restore-or-migrate-data-volumes "Docker Docs") because.. you know.. the script may not like your system.
+3. When using the script for the first time or after upgrading the host Docker version, run the script with the `--dry-run` parameter first to make sure it works okay and doesn't delete any volumes that shouldn't be deleted. If you feel bold and run it without `--dry-run` anyway, make sure you did 1.
 
 ### Usage standalone script
 $ sudo ./docker-cleanup-volumes.sh [--dry-run] [--verbose]
