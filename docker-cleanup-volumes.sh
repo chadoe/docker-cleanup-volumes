@@ -125,9 +125,9 @@ for container in $container_ids; do
 	); do
                 log_verbose "Processing volumepath ${volpath} for container ${container}"
 		#try to get volume id from the volume path
-		vid=$(echo "${volpath}"|sed "s|${vfsdir_match}||;s|${volumesdir_match}||;s/.*\([0-9a-f]\{64\}\).*/\1/")
+		vid=$(echo "${volpath}"|sed "s|${vfsdir_match}||;s|${volumesdir_match}||;s/.*\/\([0-9a-f]\{64\}\)\$/\1/")
                 # host daemon shows original dir path - this is why _match variables are used:
-                if [[ (${volpath} == ${vfsdir_match}* || ${volpath} == ${volumesdir_match}*) && "${vid}" =~ [0-9a-f]{64} ]]; then
+                if [[ "${vid}" =~ [0-9a-f]{64} ]]; then
                         log_verbose "Found volume ${vid}"
                         allvolumes+=("${vid}")
                 else
