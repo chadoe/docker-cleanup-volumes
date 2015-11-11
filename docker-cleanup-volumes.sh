@@ -13,6 +13,8 @@ dockerdir=/var/lib/docker
 dockerPs=`ps aux | grep $docker_bin | grep -v grep` || :
 if [[ $dockerPs =~ ' -g ' ]]; then
 	dockerdir=`echo $dockerPs | sed 's/.* -g//' | cut -d ' ' -f 2`
+elif [[ $dockerPs =~ ' --graph=' ]]; then
+    dockerdir=`echo $dockerPs | sed 's/.* --graph//' | cut -d '=' -f 2 | awk '{print $1}'`
 fi
 
 dockerdir=$(readlink -f $dockerdir)
