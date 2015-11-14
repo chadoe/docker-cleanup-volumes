@@ -34,27 +34,27 @@ function log_verbose() {
 function delete_volumes() {
   targetdir=$1
   echo
-  if [[ ! -d ${targetdir} ]]; then
-        echo "Directory ${targetdir} does not exist, skipping."
+  if [[ ! -d ${targetdir} || ! "$(ls -A ${targetdir})" ]]; then
+        echo "Directory ${targetdir} does not exist or is empty, skipping."
         return
   fi
   echo "Delete unused volume directories from $targetdir"
   for dir in $(find ${targetdir} -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
   do
         dir=$(basename $dir)
-        if [[ "${dir}" =~ [0-9a-f]{64} ]]; then
+        if [[ -d "${targetdir}/${dir}/_data" || "${dir}" =~ [0-9a-f]{64} ]]; then
                 if [ ${#allvolumes[@]} -gt 0 ] && [[ ${allvolumes[@]} =~ "${dir}" ]]; then
-                        echo In use ${dir}
+                        echo "In use ${dir}"
                 else
                         if [ "${dryrun}" = false ]; then
-                                echo Deleting ${dir}
-                                rm -rf ${targetdir}/${dir}
+                                echo "Deleting ${dir}"
+                                rm -rf "${targetdir}/${dir}"
                         else
-                                echo Would have deleted ${dir}
+                                echo "Would have deleted ${dir}"
                         fi
                 fi
         else
-                echo Not a volume ${dir}
+                echo "Not a volume ${dir}"
         fi
   done
 }
@@ -96,25 +96,6 @@ ${docker_bin} info >/dev/null
 
 container_ids=$(${docker_bin} ps -a -q --no-trunc)
 
-# Check if we're running as a docker container
-if [[ ${container_ids[@]} =~ (^|[[:space:]])"$HOSTNAME" ]]; then
-    # Get the dockerdir on the host from the volume mapped to /var/lib/docker
-    dockerdir_match=$(
-        ${docker_bin} inspect -f '{{if .Volumes}}{{ index .Volumes "/var/lib/docker" }}{{end}}' "$HOSTNAME"; \
-        ${docker_bin} inspect --format='{{range $mount := .Mounts}}{{if eq $mount.Destination "/var/lib/docker"}}{{$mount.Source}}{{end}}{{end}}' "$HOSTNAME"
-    )
-else
-    # Script is running standalone, dockerdir is the directory to use
-    dockerdir_match=${dockerdir}
-fi
-
-# These directories are used to match with docker inspect values
-volumesdir_match=${dockerdir_match}/volumes
-vfsdir_match=${dockerdir_match}/vfs/dir
-
-log_verbose "dockerdir -> ${dockerdir}"
-log_verbose "dockerdir_match -> ${dockerdir_match}"
-
 #All volumes from all containers
 for container in $container_ids; do
         #add container id to list of volumes, don't think these
@@ -122,19 +103,19 @@ for container in $container_ids; do
         allvolumes+=${container}
         #add all volumes from this container to the list of volumes
         for volpath in $(
-		${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}; \
-		${docker_bin} inspect --format='{{range $mount := .Mounts}}{{$mount.Source}}{{"\n"}}{{end}}' ${container} \
-	); do
+                ${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}; \
+                ${docker_bin} inspect --format='{{range $mount := .Mounts}}{{$mount.Source}}{{"\n"}}{{end}}' ${container} \
+        ); do
                 log_verbose "Processing volumepath ${volpath} for container ${container}"
-		#try to get volume id from the volume path
-		vid=$(echo "${volpath}"|sed "s|${vfsdir_match}||;s|${volumesdir_match}||;s/.*\/\([0-9a-f]\{64\}\)\$/\1/")
-                # host daemon shows original dir path - this is why _match variables are used:
-                if [[ "${vid}" =~ [0-9a-f]{64} ]]; then
+                #try to get volume id from the volume path
+                vid=$(echo "${volpath}"|sed 's|.*/\(.*\)/_data$|\1|;s|.*/\([0-9a-f]\{64\}\)$|\1|')
+                # check for either a 64 character vid or then end of a volumepath containing _data:
+                if [[ "${vid}" =~ ^[0-9a-f]{64}$ || (${volpath} =~ .*/_data$ && ! "${vid}" =~ "/") ]]; then
                         log_verbose "Found volume ${vid}"
                         allvolumes+=("${vid}")
                 else
                         #check if it's a bindmount, these have a config.json file in the ${volumesdir} but no files in ${vfsdir} (docker 1.6.2 and below)
-                        for bmv in `find ${volumesdir} -name config.json | xargs grep -l "\"IsBindMount\":true" | xargs grep -l "\"Path\":\"${volpath}\""`; do
+                        for bmv in $(grep --include config.json -Rl "\"IsBindMount\":true" ${volumesdir} | xargs grep -l "\"Path\":\"${volpath}\""); do
                                 bmv="$(basename "$(dirname "${bmv}")")"
                                 log_verbose "Found bindmount ${bmv}"
                                 allvolumes+=("${bmv}")
