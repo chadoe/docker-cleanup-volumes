@@ -18,7 +18,7 @@ RUN apk add --update-cache curl bash grep && \
     apk del curl && rm -rf /var/cache/apk/*
 
 #Add the cleanup script
-ADD ./docker-cleanup-volumes.sh /usr/local/bin/
+COPY ./docker-cleanup-volumes.sh /usr/local/bin/
 
 #Define entrypoint
 ENTRYPOINT ["/usr/local/bin/docker-cleanup-volumes.sh"]
