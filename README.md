@@ -1,13 +1,16 @@
-docker-cleanup-volumes.sh
+docker-cleanup-volumes
 ======================
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/chadoe/docker-cleanup-volumes/master/LICENSE)
-
+[![Docker Pulls](https://img.shields.io/docker/pulls/martin/docker-cleanup-volumes.svg)](https://hub.docker.com/r/martin/docker-cleanup-volumes/)
+[![ImageLayers Size](https://img.shields.io/imagelayers/image-size/martin/docker-cleanup-volumes/latest.svg)](https://hub.docker.com/r/martin/docker-cleanup-volumes/)
+[![ImageLayers Layers](https://img.shields.io/imagelayers/layers/martin/docker-cleanup-volumes/latest.svg)](https://hub.docker.com/r/martin/docker-cleanup-volumes/)
+[![Docker Stars](https://img.shields.io/docker/stars/martin/docker-cleanup-volumes.svg)](https://hub.docker.com/r/martin/docker-cleanup-volumes/)
 
 ##### WARNING: Use at your own risk, always test with the `--dry-run` parameter first. If it's not compatible with your system or Docker version it *will* delete all your volumes.
 
 Shellscript to delete orphaned docker volumes in /var/lib/docker/volumes and /var/lib/docker/vfs/dir  
-Docker version 1.4.1 up to 1.8.1
+Docker version 1.4.1 up to 1.9.x
 
 ### Precautions
 1. Don't use with boot2docker, docker machine or any tools that use a virtual machine to run docker, unless you run the script on the virtual machine itself (meaning don't run this script or docker command from your MAC).
@@ -21,7 +24,7 @@ $ sudo ./docker-cleanup-volumes.sh [--dry-run] [--verbose]
 --verbose : Have the script output more information.  
 
 ### Running from Docker
-Run the "latest" forward compatible Docker client version (works with host Docker 1.4.x up to 1.8.x)
+Run the "latest" forward compatible Docker client version (works with host Docker 1.4.x up to 1.9.x)
 ```
 $ docker run -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker --rm martin/docker-cleanup-volumes --dry-run
 ```
