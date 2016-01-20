@@ -97,6 +97,8 @@ ${docker_bin} info >/dev/null
 container_ids=$(${docker_bin} ps -a -q --no-trunc)
 
 #All volumes from all containers
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
 for container in $container_ids; do
         #add container id to list of volumes, don't think these
         #ever exists in the volumesdir but just to be safe
@@ -125,6 +127,7 @@ for container in $container_ids; do
                 fi
         done
 done
+IFS=$SAVEIFS
 
 delete_volumes ${volumesdir}
 delete_volumes ${vfsdir}
