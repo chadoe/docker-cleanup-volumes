@@ -12,6 +12,17 @@ docker-cleanup-volumes
 Shellscript to delete orphaned docker volumes in /var/lib/docker/volumes and /var/lib/docker/vfs/dir  
 Docker version 1.4.1 up to 1.9.x
 
+### Note about Docker 1.9 and up
+To delete orphaned volumes in Docker 1.9 and up you can also use the built-in `docker volume` commands instead of this docker-cleanup-volumes script. The built-in command also deletes any directory in /var/lib/docker/volumes that is not a volume so make sure you didn't put anything in there you want to save:  
+List:
+```
+$ docker volume ls -qf dangling=true
+```
+Cleanup:
+```
+$ docker volume rm $(docker volume ls -qf dangling=true)
+```
+
 ### Precautions
 1. Don't use with boot2docker, docker machine or any tools that use a virtual machine to run docker, unless you run the script on the virtual machine itself (meaning don't run this script or docker command from your MAC).
 2. [Backup your volumes](https://docs.docker.com/userguide/dockervolumes/#backup-restore-or-migrate-data-volumes "Docker Docs") because.. you know.. the script may not like your system.
