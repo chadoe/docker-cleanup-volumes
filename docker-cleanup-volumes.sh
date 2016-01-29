@@ -22,7 +22,7 @@ dockerdir=$(readlink -f $dockerdir)
 volumesdir=${dockerdir}/volumes
 vfsdir=${dockerdir}/vfs/dir
 allvolumes=()
-dryrun=false
+dryrun=true
 verbose=false
 
 function log_verbose() {
@@ -57,6 +57,12 @@ function delete_volumes() {
                 echo "Not a volume ${dir}"
         fi
   done
+  if [ "${dryrun}" = true ]; then
+	echo " "
+	echo "===================================================="
+	echo "To delete 'Would have deleted' volume use : --delete"
+	echo "===================================================="
+  fi
 }
 
 if [ $UID != 0 ]; then
@@ -74,6 +80,9 @@ do
     key="$1"
 
     case $key in
+        -d|--delete)
+            dryrun=false
+        ;;
         -n|--dry-run)
             dryrun=true
         ;;
@@ -82,7 +91,8 @@ do
         ;;
         *)
             echo "Cleanup docker volumes: remove unused volumes."
-            echo "Usage: ${0##*/} [--dry-run] [--verbose]"
+            echo "Usage: ${0##*/} [--dry-run] [--delete] [--verbose]"
+            echo "   -d, --delete:  REALLY DELETE VOLUMES"
             echo "   -n, --dry-run: dry run: display what would get removed."
             echo "   -v, --verbose: verbose output."
             exit 1
