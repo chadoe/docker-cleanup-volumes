@@ -18,9 +18,14 @@ List:
 ```
 $ docker volume ls -qf dangling=true
 ```
+
 Cleanup:
 ```
 $ docker volume rm $(docker volume ls -qf dangling=true)
+```
+Or, handling a no-op better but Linux specific:
+```
+$ docker volume ls -qf dangling=true | xargs -r docker volume rm
 ```
 
 ### Precautions
