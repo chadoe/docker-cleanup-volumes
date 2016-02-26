@@ -92,7 +92,7 @@ do
 done
 
 # Make sure that we can talk to docker daemon. If we cannot, we fail here.
-${docker_bin} info >/dev/null
+${docker_bin} version >/dev/null
 
 container_ids=$(${docker_bin} ps -a -q --no-trunc)
 
