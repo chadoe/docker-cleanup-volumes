@@ -115,11 +115,11 @@ for container in $container_ids; do
         #ever exists in the volumesdir but just to be safe
         allvolumes+=${container}
         #add all volumes from this container to the list of volumes
+        log_verbose "Inspecting container ${container}"
         for volpath in $(
-                ${docker_bin} inspect --format='{{range $vol, $path := .Volumes}}{{$path}}{{"\n"}}{{end}}' ${container}; \
-                ${docker_bin} inspect --format='{{range $mount := .Mounts}}{{$mount.Source}}{{"\n"}}{{end}}' ${container} \
+                ${docker_bin} inspect --format='{{range $key, $val := .}}{{if eq $key "Volumes"}}{{range $vol, $path := .}}{{$path}}{{"\n"}}{{end}}{{end}}{{if eq $key "Mounts"}}{{range $mount := $val}}{{$mount.Source}}{{"\n"}}{{end}}{{end}}{{end}}' ${container} \
         ); do
-                log_verbose "Processing volumepath ${volpath} for container ${container}"
+                log_verbose "Processing volumepath ${volpath}"
                 #try to get volume id from the volume path
                 vid=$(echo "${volpath}" | sed 's|.*/\(.*\)/_data$|\1|;s|.*/\([0-9a-f]\{64\}\)$|\1|')
                 # check for either a 64 character vid or then end of a volumepath containing _data:
