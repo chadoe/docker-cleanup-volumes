@@ -10,7 +10,7 @@ docker-cleanup-volumes
 ##### WARNING: Use at your own risk, always test with the `--dry-run` parameter first. If it's not compatible with your system or Docker version it *will* delete all your volumes.
 
 Shellscript to delete orphaned docker volumes in /var/lib/docker/volumes and /var/lib/docker/vfs/dir  
-Docker version 1.4.1 up to 1.10.x
+Docker version 1.4.1 up to 1.11.x
 
 ### Note about Docker 1.9 and up
 To delete orphaned volumes in Docker 1.9 and up you can also use the built-in `docker volume` commands instead of this docker-cleanup-volumes script. The built-in command also deletes any directory in /var/lib/docker/volumes that is not a volume so make sure you didn't put anything in there you want to save:  
@@ -40,7 +40,7 @@ $ sudo ./docker-cleanup-volumes.sh [--dry-run] [--verbose]
 --verbose : Have the script output more information.  
 
 ### Running from Docker
-Run the "latest" forward compatible Docker client version (works with host Docker 1.4.x up to 1.9.x)
+Run the "latest" forward compatible Docker client version (works with host Docker 1.4.x up to 1.11.x)
 ```
 $ docker run -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker --rm martin/docker-cleanup-volumes --dry-run
 ```
