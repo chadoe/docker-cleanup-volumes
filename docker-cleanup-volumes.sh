@@ -67,7 +67,7 @@ function delete_volumes() {
         else
                 echo "Not a volume ${dir}"
         fi
-  done < <(find "${targetdir}" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null)
+  done < $(find "${targetdir}" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null)
 }
 
 if [ $UID != 0 ]; then
