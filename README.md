@@ -11,7 +11,7 @@ Shellscript to delete orphaned docker volumes in /var/lib/docker/volumes and /va
 Docker version 1.4.1 up to 1.13.x
 
 ### Note about Docker 1.9 and up
-To delete orphaned volumes in Docker 1.9 and up you can also use the built-in `docker volume` commands instead of this docker-cleanup-volumes script. The built-in command also deletes any directory in /var/lib/docker/volumes that is not a volume so make sure you didn't put anything in there you want to save:  
+To delete orphaned volumes in Docker 1.9 and up you can also use the built-in `docker volume prune` commands instead of this docker-cleanup-volumes script. The built-in command also deletes any directory in /var/lib/docker/volumes that is not a volume so make sure you didn't put anything in there you want to save:  
 List:
 ```
 $ docker volume ls -qf dangling=true
