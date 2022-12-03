@@ -3,17 +3,17 @@
 #Usage:
 #docker run -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker --rm martin/docker-cleanup-volumes [--dry-run]
 #
-FROM alpine:3.2
+FROM alpine:3.17
 
 MAINTAINER Martin van Beurden <chadoe@gmail.com>
 
-ENV DOCKER_VERSION=1.4.1
+ENV DOCKER_VERSION=20.10.21
 
 #Install an up to date version of docker
 RUN apk add --update-cache curl bash grep && \
 # the docker package in alpine disables aufs and devicemapper
-    curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-$DOCKER_VERSION -o /usr/bin/docker && \
-    chmod +x /usr/bin/docker && \
+    curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz | tar -xz docker/docker --strip-components 1 && \
+    mv ./docker /usr/bin && chmod +x /usr/bin/docker && \
 #cleanup
     apk del curl && rm -rf /var/cache/apk/*
 
