@@ -30,7 +30,7 @@ fi
 dockerdir=$(readlink -f "$dockerdir")
 
 volumesdir=${dockerdir}/volumes
-vfsdir=${dockerdir}/vfs/dir
+aufsdir=${dockerdir}/aufs/mnt
 allvolumes=()
 dryrun=false
 verbose=false
@@ -127,7 +127,7 @@ for container in $container_ids; do
                         log_verbose "Found volume ${vid}"
                         allvolumes+=("${vid}")
                 else
-                        #check if it's a bindmount, these have a config.json file in the ${volumesdir} but no files in ${vfsdir} (docker 1.6.2 and below)
+                        #check if it's a bindmount, these have a config.json file in the ${volumesdir} but no files in ${aufsdir} (docker 1.6.2 and below)
                         for bmv in $(find "${volumesdir}" -name config.json -print | xargs grep -l "\"IsBindMount\":true" | xargs grep -l "\"Path\":\"${volpath}\""); do
                                 bmv="$(basename "$(dirname "${bmv}")")"
                                 log_verbose "Found bindmount ${bmv}"
@@ -141,4 +141,4 @@ done
 IFS=$SAVEIFS
 
 delete_volumes "${volumesdir}"
-delete_volumes "${vfsdir}"
+delete_volumes "${aufsdir}"
