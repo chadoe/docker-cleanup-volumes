@@ -53,3 +53,15 @@ It is also possible to use the host docker binary by mounting the host docker bi
 ```
 $ docker run -v $(which docker):/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v $(readlink -f /var/lib/docker):/var/lib/docker --rm martin/docker-cleanup-volumes --dry-run
 ```
+
+boot2docker-cleanup-volumes.sh
+==============================
+
+Boot2docker flavor of the shellscript above.
+
+usage: ./boot2docker-cleanup-volumes.sh [--size]
+
+--size : display also the total size of each volume
+
+You can use (copy and paste) the output of this script to remove the volumes in
+your boot2docker VM using the `boot2docker ssh` shell.
